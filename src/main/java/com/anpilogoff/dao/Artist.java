@@ -17,8 +17,6 @@ public class Artist {
     private String name;
     private String genre_id;
     // Will userd by JPA
-    // (@OneToMany (mappedBy ="artist"), fetch = FecthType.LAZY, orphanRemoval = )
+    //@OneToMany(mappedBy = "artist", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Album> albums;
-    // @OneToMany (mappedBy = "artist"), fetch = fetchType.LAZY)
-    private List<Track> tracks;
 }
