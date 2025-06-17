@@ -1,7 +1,7 @@
 package com.anpilogoff.util;
 
-import com.anpilogoff.dao.Album;
-import com.anpilogoff.dao.Track;
+import com.anpilogoff.database.entity.Album;
+import com.anpilogoff.database.entity.Track;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.Test;
 

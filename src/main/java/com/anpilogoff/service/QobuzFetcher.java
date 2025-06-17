@@ -1,7 +1,7 @@
 package com.anpilogoff.service;
 
-import com.anpilogoff.dao.Artist;
-import com.anpilogoff.dao.Album;
+import com.anpilogoff.database.entity.Artist;
+import com.anpilogoff.database.entity.Album;
 import com.anpilogoff.util.ConfigUtil;
 import com.anpilogoff.util.HttpUtil;
 import com.anpilogoff.util.JsonUtil;
@@ -50,15 +50,16 @@ public class QobuzFetcher {
 
         // Async fetch artist and albums data
         return sendAsync(url).thenCompose(artistJson -> {
+            System.out.println(artistJson);
             String name = artistJson.path("name").asText(null);
-            String genreId = artistJson.path("genre").path("id").asText();
+           // String genreId = artistJson.path("genre").path("id").asText();
 
             if (name == null) {
                 log.info("Error. Couldn't retrieve artist name.");
                 throw new CompletionException(new IllegalStateException("Error artist name retrievement"));
             }
 
-            Artist artist = Artist.builder().id(artistId).name(name).genre_id(genreId).build();
+            Artist artist = Artist.builder().id(artistId).name(name).build();
 
             // Обработка альбомов
             JsonNode albumsArrayJson = artistJson.path("albums").path("items");
@@ -109,16 +110,20 @@ public class QobuzFetcher {
         return sendAsync(albumUrl).thenApply(albumJson -> {
             String albumTitle = albumJson.path("title").asText();
             JsonNode tracksArray = albumJson.path("tracks").path("items");
+            int genreId = albumJson.path("genre").path("id").asInt(-100);
+            String coverUrl = albumJson.path("image").path("large").asText(null);
 
             Album album = Album.builder()
                     .id(albumId)
                     .title(albumTitle)
+                    .genreId(genreId)
+                    .cover_url(coverUrl)
                     .artist(artist)
                     .tracks(new ArrayList<>())
                     .build();
             //set fully completed tracks list to album object
             album.setTracks(JsonUtil.extractTracks(tracksArray, album));
-
+            artist.setGenreId(genreId);
             return album;
         });
     }
