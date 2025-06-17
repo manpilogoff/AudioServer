@@ -8,12 +8,7 @@ public class HttpUtil {
         return HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .header("User-Agent","Mozilla/5.8")
-                .header("Accept", "application/json")
                 .GET()
                 .build();
-    }
-
-    public static HttpRequest buildSignedGetRequest(String url) {
-return null;
     }
 }
