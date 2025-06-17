@@ -10,9 +10,9 @@
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 
         <!-- перечислите @Entity-классы или подключите автоматическое обнаружение -->
-        <class>com.anpilogoff.dao.entity.Artist</class>
-        <class>com.anpilogoff.dao.entity.Album</class>
-        <class>com.anpilogoff.dao.entity.Track</class>
+        <class>com.anpilogoff.database.entity.Artist</class>
+        <class>com.anpilogoff.database.entity.Album</class>
+        <class>com.anpilogoff.database.entity.Track</class>
 
         <properties>
             <!-- JDBC -->
