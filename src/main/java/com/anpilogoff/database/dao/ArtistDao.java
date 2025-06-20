@@ -20,6 +20,11 @@ public interface ArtistDao {
          * Получить ArtistDTO по id
          */
         ArtistDTO getArtistDTOById(String artistId);
+
+        /**
+         * Получить ArtistDTO по id
+         */
+        boolean save(Artist artist);
     }
 
 

@@ -29,5 +29,11 @@ public interface TrackDao {
     /**
      * Получить список треков DTO по id альбома
      */
-    List<TrackDTO> findTrackDTOsByAlbumId(String albumId);
+    List<TrackDTO> findTracksByAlbumId(String albumId);
+
+    /**
+     * Получить список треков DTO по id альбома
+     */
+    boolean updateTrackS3ExistStatus(String trackId);
+
 }

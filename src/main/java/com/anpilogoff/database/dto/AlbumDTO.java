@@ -15,4 +15,13 @@ public class AlbumDTO {
     private String artistId;
     private String artistName;
     private List<TrackDTO> tracks;
+
+
+    public AlbumDTO(String albumId, String title, String coverUrl, String artistId, String artistName) {
+        this.albumId = albumId;
+        this.title = title;
+        this.coverUrl = coverUrl;
+        this.artistId = artistId;
+        this.artistName = artistName;
+    }
 }

@@ -24,5 +24,5 @@ public class Track {
 
     private int duration;
     // Is exists in s3 storage
-    private boolean s3_exists;
+    private boolean s3Exists;
 }

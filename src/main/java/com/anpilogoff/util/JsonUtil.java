@@ -35,7 +35,7 @@ public class JsonUtil {
                         .title(trackNode.path("title").asText("Untitled"))
                         .album(album)
                         .duration(trackNode.path("duration").asInt(0))
-                        .s3_exists(false)
+                        .s3Exists(false)
                         .build();
 
                 tracks.add(track);

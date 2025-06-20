@@ -19,10 +19,10 @@ public interface AlbumDao {
     /**
      * Получить AlbumDTO по id альбома
      */
-    AlbumDTO getAlbumDTOById(String albumId);
+    AlbumDTO getAlbumById(String albumId);
 
     /**
      * Получить список AlbumDTO по artistId
      */
-    List<AlbumDTO> findAlbumDTOsByArtistId(String artistId);
+    List<AlbumDTO> findAlbumsByArtistId(String artistId);
 }
