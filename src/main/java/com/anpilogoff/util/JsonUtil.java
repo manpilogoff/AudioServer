@@ -21,9 +21,13 @@ public class JsonUtil {
             return MAPPER.readTree(str);
         }
         catch (JsonProcessingException e) {
-            throw new CompletionException(new RuntimeException("JSONfailed: " + e.getMessage()));}
+            throw new CompletionException(new RuntimeException("JSONfailed: " + e.getMessage()));
+        }
     }
 
+    /**
+     *
+     */
     public static List<Track> extractTracks(JsonNode tracksJsonArray, Album album) {
         List<Track> tracks = new ArrayList<>();
         if (tracksJsonArray.isArray()) {
@@ -50,6 +54,11 @@ public class JsonUtil {
 
     public static String extractTrackUrl(String textJson) {
         return parseJson(textJson).path("url").asText().replace("\\","");
+    }
+
+
+    public static String toJson(Object obj) {
+        return null;
     }
 
 
