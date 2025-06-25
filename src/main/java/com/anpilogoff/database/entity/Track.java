@@ -25,4 +25,9 @@ public class Track {
     private int duration;
     // Is exists in s3 storage
     private boolean s3Exists;
+
+
+    @ManyToOne
+    @JoinColumn(name = "artist_id", referencedColumnName = "id")
+    private Artist artist;
 }

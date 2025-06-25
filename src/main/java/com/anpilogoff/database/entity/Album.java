@@ -15,7 +15,7 @@ public class Album {
     @Id
     private String id;
     private String title;
-    private int genreId;
+    private String genreId;
     private String cover_url;
 
     @ManyToOne
