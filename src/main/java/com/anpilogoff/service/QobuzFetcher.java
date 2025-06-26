@@ -170,26 +170,4 @@ public class QobuzFetcher {
                 .thenApply(JsonUtil::parseJson);
     }
 
-    public void downloadFile(String url, String fileName) throws Exception {
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .GET()
-                .build();
-
-        InputStream inputStream = CLIENT.send(request, HttpResponse.BodyHandlers.ofInputStream()).body();
-
-        try (OutputStream outputStream = Files.newOutputStream(Paths.get(fileName))) {
-            byte[] buffer = new byte[4096];
-            int bytesRead;
-            while ((bytesRead = inputStream.read(buffer)) != -1) {
-                outputStream.write(buffer, 0, bytesRead);
-
-            }
-            outputStream.flush();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        // Files.write(Path.of(fileName), fileBytes, StandardOpenOption.CREATE);
-    }
 }
