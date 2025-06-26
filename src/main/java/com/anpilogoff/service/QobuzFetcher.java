@@ -11,7 +11,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URI;
 import java.net.http.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.*;
@@ -27,8 +32,7 @@ public class QobuzFetcher {
     public QobuzFetcher() {
         log.info("Reading configuration from properties file...");
         Properties prop;
-        try {prop = ConfigUtil.loadConfig("env.properties");}
-        catch (IOException e) {throw new RuntimeException(e);}
+        prop = ConfigUtil.loadConfig("env.properties");
 
         this.API_BASE_URL = prop.getProperty("API_BASE_URL");
         this.APP_ID = prop.getProperty("APP_ID");
@@ -110,8 +114,11 @@ public class QobuzFetcher {
         return sendAsync(albumUrl).thenApply(albumJson -> {
             String albumTitle = albumJson.path("title").asText();
             JsonNode tracksArray = albumJson.path("tracks").path("items");
-            int genreId = albumJson.path("genre").path("id").asInt(-100);
+            String genreId = albumJson.path("genre").path("id").asText(null);
             String coverUrl = albumJson.path("image").path("large").asText(null);
+
+
+
 
             Album album = Album.builder()
                     .id(albumId)
@@ -157,9 +164,32 @@ public class QobuzFetcher {
     }
 
     // Async request sending -> response json string parsing with "JsonUtils"...
-    public   CompletableFuture<JsonNode> sendAsync(String url) {
+    public CompletableFuture<JsonNode> sendAsync(String url) {
         return CLIENT.sendAsync(HttpUtil.buildGetRequest(url), HttpResponse.BodyHandlers.ofString())
                 .thenApply(HttpResponse::body)
                 .thenApply(JsonUtil::parseJson);
+    }
+
+    public void downloadFile(String url, String fileName) throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .GET()
+                .build();
+
+        InputStream inputStream = CLIENT.send(request, HttpResponse.BodyHandlers.ofInputStream()).body();
+
+        try (OutputStream outputStream = Files.newOutputStream(Paths.get(fileName))) {
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+
+            }
+            outputStream.flush();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        // Files.write(Path.of(fileName), fileBytes, StandardOpenOption.CREATE);
     }
 }

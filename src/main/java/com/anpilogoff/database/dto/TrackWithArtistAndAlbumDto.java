@@ -2,7 +2,7 @@ package com.anpilogoff.database.dto;
 
 public record TrackWithArtistAndAlbumDto(
         String trackId,
-        String trackTitle,
+        String title,
         String albumId,
         String albumTitle,
         String albumCoverUrl,

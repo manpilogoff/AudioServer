@@ -16,6 +16,7 @@ public class Artist {
     private String id;
     private String name;
     private String genreId;
+
     @OneToMany(mappedBy = "artist", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Album> albums;
 

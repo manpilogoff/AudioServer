@@ -7,9 +7,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.concurrent.CompletionException;
 
 public class JsonUtil {
@@ -25,9 +24,6 @@ public class JsonUtil {
         }
     }
 
-    /**
-     *
-     */
     public static List<Track> extractTracks(JsonNode tracksJsonArray, Album album) {
         List<Track> tracks = new ArrayList<>();
         if (tracksJsonArray.isArray()) {
@@ -47,7 +43,7 @@ public class JsonUtil {
             }
         } else {
             log.info("         [!] У альбома нет треков.\n");
-            //кинуть исключение
+            return null;
         }
         return tracks;
     }
@@ -57,11 +53,9 @@ public class JsonUtil {
     }
 
 
-    public static String toJson(Object obj) {
-        return null;
+    public static String toJson(Object obj) throws JsonProcessingException {
+       return MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
     }
-
-
 
 }
 
