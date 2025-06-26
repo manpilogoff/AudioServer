@@ -1,7 +1,7 @@
 package com.anpilogoff.service;
 
-import com.anpilogoff.dao.Artist;
-import com.anpilogoff.dao.Album;
+import com.anpilogoff.database.entity.Artist;
+import com.anpilogoff.database.entity.Album;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;

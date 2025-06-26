@@ -1,16 +1,18 @@
 package com.anpilogoff.util;
 
-import com.anpilogoff.dao.Album;
-import com.anpilogoff.dao.Track;
+import com.anpilogoff.database.entity.Album;
+import com.anpilogoff.database.entity.Track;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.util.ArrayList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.concurrent.CompletionException;
 
 public class JsonUtil {
+    private static final Logger log = LoggerFactory.getLogger(JsonUtil.class);
     public static final ObjectMapper MAPPER = new ObjectMapper();
 
     public static JsonNode parseJson(String str) {
@@ -18,40 +20,41 @@ public class JsonUtil {
             return MAPPER.readTree(str);
         }
         catch (JsonProcessingException e) {
-            throw new CompletionException(new RuntimeException("JSONfailed: " + e.getMessage()));}
+            throw new CompletionException(new RuntimeException("JSONfailed: " + e.getMessage()));
+        }
     }
 
     public static List<Track> extractTracks(JsonNode tracksJsonArray, Album album) {
         List<Track> tracks = new ArrayList<>();
         if (tracksJsonArray.isArray()) {
+            log.info(("         [<Album>] : ".concat( album.getTitle())));
+
             for (JsonNode trackNode : tracksJsonArray) {
-                String trackId = trackNode.path("id").asText(null);
-                String trackTitle = trackNode.path("title").asText("Untitled");
-                int duration = trackNode.path("duration").asInt(0);
                 Track track = Track.builder()
-                        .id(trackId)
-                        .title(trackTitle)
+                        .id(trackNode.path("id").asText(null))
+                        .title(trackNode.path("title").asText("Untitled"))
                         .album(album)
-                        .duration(duration)
-                        .s3_exists(false)
+                        .duration(trackNode.path("duration").asInt(0))
+                        .s3Exists(false)
                         .build();
 
                 tracks.add(track);
-                System.out.println("         [+] Трек: " + trackTitle + " (" + duration + " сек)");
+                log.info(("             [+] track extracted: ".concat( track.getId())));
             }
         } else {
-            System.out.println("         [!] У альбома нет треков.");
+            log.info("         [!] У альбома нет треков.\n");
+            return null;
         }
         return tracks;
     }
 
-    public static List<String> extractAlbumsIds(JsonNode albums) {
-        List<String> ids = new ArrayList<>();
-        JsonNode tracksJson = albums.get("albums").path("items");
-        for (JsonNode track : tracksJson) {
-            ids.add(track.asText());
-        }
-        return ids;
+    public static String extractTrackUrl(String textJson) {
+        return parseJson(textJson).path("url").asText().replace("\\","");
+    }
+
+
+    public static String toJson(Object obj) throws JsonProcessingException {
+       return MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
     }
 
 }

@@ -5,9 +5,10 @@ import java.net.http.HttpRequest;
 
 public class HttpUtil {
     public static HttpRequest buildGetRequest(String url) {
+        String auth_token = ConfigUtil.loadConfig("env.properties").getProperty("AUTH_TOKEN");
         return HttpRequest.newBuilder()
                 .uri(URI.create(url))
-                .header("User-Agent","Mozilla/5.8")
+                .header("X-User-Auth-Token", auth_token)
                 .GET()
                 .build();
     }
