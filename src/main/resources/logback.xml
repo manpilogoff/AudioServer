@@ -11,4 +11,10 @@
             <charset>UTF-8</charset>
         </encoder>
     </appender>
+
+    <logger name="com.amazonaws" level="DEBUG" />
+    <logger name="com.amazonaws.request" level="DEBUG"/>
+    <logger name="com.amazonaws.response" level="DEBUG"/>
+    <logger name="com.amazonaws.auth" level="DEBUG"/>
+    <logger name="com.amazonaws.internal" level="DEBUG"/>
 </configuration>
