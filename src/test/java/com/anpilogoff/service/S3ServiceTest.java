@@ -82,6 +82,6 @@ class S3ServiceTest {
         boolean result = s3Service.uploadToS3("bucket", "key", testFile);
 
         assertFalse(result);
-        verify(mockS3, times(3)).putObject(any());
+        verify(mockS3, times(1)).putObject(any());
     }
 }

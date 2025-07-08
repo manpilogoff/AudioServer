@@ -1,5 +1,6 @@
 package com.anpilogoff.service;
 
+import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
@@ -46,7 +47,7 @@ public class S3Service {
 
             log.debug("Uploaded: {} | ETag: {}", objectKey, putResult.getETag());
             return true;
-        } catch (AmazonServiceException ex) {
+        } catch (AmazonClientException ex) {
             log.error("Failed to upload file", ex);
             return false;
         }
