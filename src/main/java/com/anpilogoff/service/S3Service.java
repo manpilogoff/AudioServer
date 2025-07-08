@@ -8,12 +8,9 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.anpilogoff.util.ConfigUtil;
 import lombok.extern.slf4j.Slf4j;
-
 import java.io.File;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -55,7 +52,6 @@ public class S3Service {
         }
     }
 
-
     public boolean uploadFolderToS3(String bucketName, String s3FolderPath, File localFolder) {
         if (!localFolder.isDirectory()) {
             log.error("Not a directory: {}", localFolder.getAbsolutePath());
@@ -93,7 +89,6 @@ public class S3Service {
             });
         }
 
-
         try {
             if(!latch.await(10, TimeUnit.SECONDS)) {
                 log.warn("Timeout waiting downloads completion");
@@ -106,7 +101,4 @@ public class S3Service {
         log.info("ALL FILES SUCCESSFULLY uploaded {} files", successCount.get());
         return successCount.get() == files.length;
     }
-
-
-
 }
