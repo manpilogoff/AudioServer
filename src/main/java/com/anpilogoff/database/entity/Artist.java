@@ -2,7 +2,6 @@ package com.anpilogoff.database.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.util.List;
 
 @Builder
@@ -19,7 +18,4 @@ public class Artist {
 
     @OneToMany(mappedBy = "artist", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Album> albums;
-
-    @OneToMany(mappedBy = "artist", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<Track> tracks;
 }

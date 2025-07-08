@@ -24,7 +24,4 @@ public class Track {
 
     private int duration;
     private boolean s3Exists;
-
-    @ManyToOne
-    private Artist artist;
 }
