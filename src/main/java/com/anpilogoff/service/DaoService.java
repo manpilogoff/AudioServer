@@ -5,29 +5,35 @@ import com.anpilogoff.database.entity.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import jakarta.persistence.NoResultException;
+import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 
+@Slf4j
 public class DaoService {
-    private static final Logger log = LoggerFactory.getLogger(DaoService.class);
     private final EntityManagerFactory emf;
 
     public DaoService(EntityManagerFactory emf) { this.emf = emf; }
 
     public boolean saveArtist(Artist artist) {
-        EntityTransaction tx;
+        EntityTransaction tx = null;
 
         try (EntityManager em = emf.createEntityManager()) {
             tx = em.getTransaction();
             tx.begin();
             em.persist(artist);
             tx.commit();
+            em.close();
 
             return true;
         } catch (RuntimeException e) {
             log.error("Error during saveArtist() execution: {}", e.getMessage(), e);
+
+            if(tx != null) {
+                tx.rollback();
+                tx.commit();
+            }
+
             return false;
         }
     }
@@ -57,7 +63,10 @@ public class DaoService {
             tx = em.getTransaction();
             tx.begin();
             Track track = em.find(Track.class, trackId);
+            log.debug("{}    trackId!!!!!", track);
+            log.debug("!!!!!TRACK   {}", track);
             track.setS3Exists(true);
+
             em.merge(track);
             tx.commit();
 
@@ -140,5 +149,17 @@ public class DaoService {
             log.error("Error during getAlbumWithTracks() execution: {}", e.getMessage(), e);
             return null;
         }
+    }
+
+    public Track getTrackEntity(String trackId){
+        Track track;
+
+        try (EntityManager em = emf.createEntityManager()){
+            track =  em.createQuery("SELECT t FROM Track t WHERE t.id = :id", Track.class)
+                    .setParameter("id", trackId)
+                    .getSingleResult();
+        } catch (NoResultException e ){ return null; }
+
+        return track;
     }
 }
