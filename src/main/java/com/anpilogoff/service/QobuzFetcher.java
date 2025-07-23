@@ -15,7 +15,7 @@ import java.util.concurrent.*;
 
 @Slf4j
 public class QobuzFetcher {
-    public static HttpClient CLIENT = HttpClient.newHttpClient();
+    private final HttpClient CLIENT = HttpClient.newHttpClient();
     private final String API_BASE_URL;
     private final String APP_ID;
     private final String AUTH_TOKEN;
@@ -45,7 +45,6 @@ public class QobuzFetcher {
 
         // Async fetch artist and albums data
         return sendAsync(url).thenCompose(artistJson -> {
-            System.out.println(artistJson);
             String name = artistJson.path("name").asText(null);
 
             if (name == null) {
@@ -87,7 +86,7 @@ public class QobuzFetcher {
                         }
                     }
                     artist.setAlbums(albums);
-
+                    System.out.println(artist);
                     log.info("Artist object completely built: ".concat(String.valueOf(artist.getAlbums().size())));
                     return artist;
                 });
@@ -123,29 +122,47 @@ public class QobuzFetcher {
     }
 
     // Method which obtain short-live audio stream url
-    public String getFileUrl(int trackId, int formatId) throws Exception {
+    public String searchTracks(String query, int limit, String token)  {
+        String url = String.format("%s/catalog/search?app_id=172934108&query=%s&limit=%s&type=tracks&user_auth_token=%s",
+                API_BASE_URL, query, limit, token);
+
+        HttpRequest request = HttpUtil.checkSearchResponseValidWithAuthToken(url);
+
+        try {
+            HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+            return response.body();
+        } catch (Exception e) {
+            log.error("Error while CLIENT.s{}", e.getMessage(), e);
+        }
+        return null;
+    }
+
+    public String getFileUrl(int trackId, int formatId) {
         // Part of raw request signature
         String timestamp = String.valueOf(Instant.now().getEpochSecond());
         String signatureRaw = String.format("trackgetFileUrlformat_id%sintentstreamtrack_id%s%s%s",
                 formatId ,trackId, timestamp , SECRET);
-        // Must be Connected to each "getFileUrl" request
-        String signature = MD5Util.calculateMD5(signatureRaw);
 
-        String url = String.format("%s/track/getFileUrl?app_id=798273057&track_id=%s&trackId&format_id=%s&intent=stream"+
-                        "&request_ts=%s&request_sig=%s", API_BASE_URL, trackId, formatId, timestamp, signature);
+        String audioUrl;
+        try {
+            // Must be calculated to each "getFileUrl" request
+            String signature = MD5Util.calculateMD5(signatureRaw);
 
-        HttpRequest request = HttpUtil.buildGetRequest(url);
-        HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
-        return JsonUtil.extractTrackUrl(response.body());
-    }
+            String url = String.format("%s/track/getFileUrl?app_id=798273057&track_id=%s&trackId&format_id=%s&intent=stream" +
+                    "&request_ts=%s&request_sig=%s", API_BASE_URL, trackId, formatId, timestamp, signature);
 
-    public String searchTracks(String query, int limit) throws Exception {
-        String url = String.format("%s/catalog/search?app_id=172934108&query=%s&limit=%s&type=tracks&user_auth_token=%s",
-                API_BASE_URL, query, limit, AUTH_TOKEN);
+         //   String url = String.format("%s/track/getFileUrl?app_id=798273057&track_id=%s&trackId&format_id=%s&intent=stream" +
+              //      "&request_ts=%s&request_sig=%s", API_BASE_URL, trackId, formatId, timestamp, signature);
 
-        HttpRequest request = HttpUtil.buildGetRequest(url);
-        HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
-        return response.body();
+
+            HttpRequest request = HttpUtil.buildGetRequest(url);
+            HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+            audioUrl = JsonUtil.extractTrackUrl(response.body());
+        } catch (Exception e) {
+            log.error("Exception in getFileUrl(): {}", e.getMessage(), e);
+            return null;
+        }
+        return audioUrl;
     }
 
     // Async request sending -> response json string parsing with "JsonUtils"...

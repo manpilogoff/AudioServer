@@ -10,6 +10,11 @@ import com.amazonaws.services.s3.model.PutObjectResult;
 import com.anpilogoff.util.ConfigUtil;
 import lombok.extern.slf4j.Slf4j;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -43,9 +48,7 @@ public class S3Service {
     public boolean uploadToS3(String bucketName, String objectKey, File file) { //или просто key?
         try {
             PutObjectRequest putRequest = new PutObjectRequest(bucketName, objectKey, file);
-            PutObjectResult putResult = s3Client.putObject(putRequest);
-
-            log.debug("Uploaded: {} | ETag: {}", objectKey, putResult.getETag());
+            s3Client.putObject(putRequest);
             return true;
         } catch (AmazonClientException ex) {
             log.error("Failed to upload file", ex);
@@ -53,17 +56,15 @@ public class S3Service {
         }
     }
 
-    public boolean uploadFolderToS3(String bucketName, String s3FolderPath, File localFolder) {
+    public boolean uploadFolderToS3(String bucketName, String s3FolderPath, File localFolder) throws IOException {
         if (!localFolder.isDirectory()) {
             log.error("Not a directory: {}", localFolder.getAbsolutePath());
-
             return false;
         }
 
         File[] files = localFolder.listFiles(File::isFile);
         if (files == null || files.length == 0) {
             log.warn("Empty directory: {}", localFolder);
-
             return true;
         }
 
@@ -100,6 +101,21 @@ public class S3Service {
         }
 
         log.info("ALL FILES SUCCESSFULLY uploaded {} files", successCount.get());
+
         return successCount.get() == files.length;
+//        Files.walk(localFolder.toPath())
+//                .sorted(Comparator.reverseOrder())
+//                .forEach(path -> {
+//                    try {
+//                        Files.delete(path);
+//                    } catch (IOException e) {
+//                        log.error("Failed to delete file: {}", path.toAbsolutePath().toString() +path.getFileName());
+//                    }
+//                });
+//
+//
+//
+
+        }
     }
-}
+

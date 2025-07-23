@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Player</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #121212;
+            color: white;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .search-box {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        #searchInput {
+            flex: 1;
+            padding: 10px;
+            background: #282828;
+            border: none;
+            color: white;
+            border-radius: 4px 0 0 4px;
+        }
+        #searchButton {
+            padding: 10px 15px;
+            background: #1DB954;
+            border: none;
+            color: white;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+        }
+        .track {
+            padding: 10px;
+            border-bottom: 1px solid #282828;
+            cursor: pointer;
+        }
+        .track:hover {
+            background: #282828;
+        }
+        audio {
+            width: 100%;
+            margin-top: 20px;
+            background: #282828;
+            border-radius: 4px;
+        }
+        .error {
+            color: #ff4444;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Поиск треков...">
+        <button id="searchButton">Найти</button>
+    </div>
+    <audio id="player" controls></audio>
+    <div id="results"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<script>
+    const player = document.getElementById('player');
+    const searchInput = document.getElementById('searchInput');
+    const searchButton = document.getElementById('searchButton');
+    const results = document.getElementById('results');
+    let currentTrackId = null;
+    let hls = null;
+
+    // Поиск треков (POST)
+    searchButton.addEventListener('click', search);
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') search();
+    });
+
+    async function search() {
+        const query = searchInput.value.trim();
+        if (!query) return;
+
+        results.innerHTML = 'Поиск...';
+
+        try {
+            const url = new URL('/search', window.location.origin);
+            url.searchParams.set('query', query);
+            url.searchParams.set('limit', '20'); // если нужно
+
+            const response = await fetch(url.toString(), {
+                method: 'GET',
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                throw new Error(`Ожидался JSON, получено: ${text.slice(0, 100)}...`);
+            }
+
+            const tracks = await response.json();
+            displayTracks(tracks);
+        } catch (error) {
+            console.error('Ошибка поиска:', error);
+            results.innerHTML = `<div class="error">Ошибка: ${error.message}</div>`;
+        }
+    }
+
+
+    function displayTracks(tracks) {
+        results.innerHTML = '';
+        tracks.forEach(track => {
+            const trackElement = document.createElement('div');
+            trackElement.className = 'track';
+            trackElement.innerHTML = `
+                <strong>${track.title}</strong><br>
+                <small>${track.artist.name} • ${track.album.title}</small>
+            `;
+            trackElement.addEventListener('click', () => playTrack(track.id, track.artist.id));
+            results.appendChild(trackElement);
+        });
+    }
+
+    async function playTrack(trackId, artistId) {
+        const isRepeat = currentTrackId === trackId;
+        currentTrackId = trackId;
+
+        const params = new URLSearchParams({
+            track_id: trackId,
+            artist_id: artistId,
+            repeat: isRepeat
+        });
+
+        try {
+            const response = await fetch(`/play?${params.toString()}`, {
+                method: 'GET'
+            });
+
+            if (!response.ok) {
+                throw new Error(`Ошибка воспроизведения: ${response.status}`);
+            }
+
+            const url = await response.text();
+            initPlayer(url);
+        } catch (error) {
+            console.error('Ошибка воспроизведения: ', error);
+            results.innerHTML = `<div class="error">Не удалось воспроизвести: ${error.message}</div>`;
+        }
+    }
+
+
+    function initPlayer(url) {
+        //..Очищаем предыдущий источник
+        if (hls) hls.destroy();
+        player.pause();
+        player.src = '';
+
+        //..HLS (.m3u8)
+        if (url.includes('.m3u8')) {
+            if (Hls.isSupported()) {
+                hls = new Hls();
+                hls.loadSource(url);
+                hls.attachMedia(player);
+                hls.on(Hls.Events.MANIFEST_PARSED, () => player.play());
+            } else if (player.canPlayType('application/vnd.apple.mpegurl')) {
+                // Для Safari
+                player.src = url;
+                player.play();
+            } else {
+                throw new Error("HLS не поддерживается в вашем браузере");
+            }
+        }
+        //..MP3/FLAC
+        else {
+            player.src = url;
+            player.play();
+        }
+    }
+</script>
+</body>
+</html>
